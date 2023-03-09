@@ -1,1 +1,3 @@
-@import url("components/DiaryEditor.module.css");
+@import url("pages/DiaryEditor.module.css");
+@import url("pages/DiaryList.module.css");
+@import url("components/DiaryItem.module.css");
