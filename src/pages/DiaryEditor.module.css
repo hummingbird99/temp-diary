@@ -4,24 +4,24 @@
   padding: 20px;
 }
 
-input,
+.container input,
 textarea {
   margin-bottom: 20px;
   width: 500px;
   padding: 10px;
 }
 
-textarea {
+.container textarea {
   height: 150px;
 }
 
-select {
+.container select {
   width: 300px;
   padding: 10px;
   margin-bottom: 20px;
 }
 
-button {
+.container button {
   width: 500px;
   padding: 10px;
   cursor: pointer;

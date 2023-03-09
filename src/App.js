@@ -1,36 +1,42 @@
+import { useRef, useState } from "react";
 import "./App.css";
 import DiaryEditor from "./pages/DiaryEditor";
 import DiaryList from "./pages/DiaryList";
 
-const dummyList = [
-  {
-    id: Date.now(),
-    author: "김벌새",
-    content: "첫 번째 게시글",
-    emotion: 5,
-    created_date: new Date().getTime(),
-  },
-  {
-    id: 2,
-    author: "이벌새",
-    content: "두 번째 게시글",
-    emotion: 4,
-    created_date: new Date().getTime(),
-  },
-  {
-    id: 3,
-    author: "최벌새",
-    content: "세 번째 게시글",
-    emotion: 3,
-    created_date: new Date().getTime(),
-  },
-];
-
 function App() {
+  const [data, setData] = useState([]);
+  const dataId = useRef(0);
+
+  const onCreate = (author, content, emotion) => {
+    const created_date = new Date().getTime();
+    const newItem = {
+      author,
+      content,
+      emotion,
+      created_date,
+      id: dataId.current,
+    };
+    dataId.current += 1;
+    setData([newItem, ...data]);
+  };
+
+  const onRemove = (targetId) => {
+    const newDiaryList = data.filter((item) => item.id !== targetId);
+    setData(newDiaryList);
+  };
+
+  const onEdit = (targetId, newContent) => {
+    setData(
+      data.map((item) =>
+        item.id === targetId ? { ...item, content: newContent } : item
+      )
+    );
+  };
+
   return (
     <div className="App">
-      <DiaryEditor />
-      <DiaryList diaryList={dummyList} />
+      <DiaryEditor onCreate={onCreate} />
+      <DiaryList onEdit={onEdit} onRemove={onRemove} diaryList={data} />
     </div>
   );
 }

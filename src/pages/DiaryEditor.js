@@ -1,7 +1,7 @@
 import React, { useRef, useState } from "react";
 import styles from "./DiaryEditor.module.css";
 
-const DiaryEditor = () => {
+const DiaryEditor = ({ onCreate }) => {
   const authorInput = useRef(); // React.mutableRefObject: HTML DOM 요소에 접근
   const contentInput = useRef();
 
@@ -28,7 +28,13 @@ const DiaryEditor = () => {
       return;
     }
 
+    onCreate(state.author, state.content, state.emotion);
     alert("저장 성공");
+    setState({
+      author: "",
+      content: "",
+      emotion: 1,
+    });
   };
 
   return (
@@ -40,6 +46,7 @@ const DiaryEditor = () => {
           name="author"
           value={state.author}
           onChange={handlerChangeState}
+          type="text"
         />
       </div>
       <div>
@@ -48,9 +55,11 @@ const DiaryEditor = () => {
           name="content"
           value={state.content}
           onChange={handlerChangeState}
+          type="text"
         />
       </div>
       <div>
+        <span>오늘의 감정점수 : </span>
         <select
           name="emotion"
           value={state.emotion}
