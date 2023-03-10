@@ -1,7 +1,10 @@
-import React, { useRef, useState } from "react";
+import React, { useContext, useRef, useState } from "react";
+import { DiaryDispatchContext } from "../App";
 import styles from "./DiaryEditor.module.css";
 
-const DiaryEditor = ({ onCreate }) => {
+const DiaryEditor = () => {
+  const { onCreate } = useContext(DiaryDispatchContext); // Provider가 세 함수를 객체로 받기 때문에 비구조 할당으로 지정해야 한다.
+
   const authorInput = useRef();
   const contentInput = useRef();
 

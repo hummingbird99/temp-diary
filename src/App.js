@@ -1,4 +1,10 @@
-import { useCallback, useEffect, useMemo, useReducer, useRef } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useReducer,
+  useRef,
+} from "react";
 import "./App.css";
 import DiaryEditor from "./pages/DiaryEditor";
 import DiaryList from "./pages/DiaryList";
@@ -26,14 +32,16 @@ const reducer = (state, action) => {
           : item
       );
     }
-    default: // 타입이 잘못 전달될 경우 상태 변화가 일어나지 않도록 default값을 비워 둠.
+    default:
       return state;
   }
 };
 
-function App() {
-  // const [data, setData] = useState([]); // useReducer로 대체
+export const DiaryStateContext = React.createContext(); // export default는 파일 하나 당 하나 밖에 할 수 없다.
 
+export const DiaryDispatchContext = React.createContext();
+
+function App() {
   const [data, dispatch] = useReducer(reducer, []);
 
   const dataId = useRef(0);
@@ -53,7 +61,7 @@ function App() {
       };
     });
 
-    dispatch({ type: "INIT", data: initData }); // 액션 객체의 타입명, 액션에 필요한 데이터 전달
+    dispatch({ type: "INIT", data: initData });
   };
 
   useEffect(() => {
@@ -70,11 +78,15 @@ function App() {
   }, []);
 
   const onRemove = useCallback((targetId) => {
-    dispatch({ type: "REMOVE", targetId }); // useCallback 내에서 dispatch 함수를 호출할 때 함수형 업데이트 작업 없이 deps를 빈 배열로 반환할 수 있다.
+    dispatch({ type: "REMOVE", targetId });
   }, []);
 
   const onEdit = useCallback((targetId, newContent) => {
     dispatch({ type: "EDIT", targetId, newContent });
+  }, []);
+
+  const memoizedDispatches = useMemo(() => {
+    return { onCreate, onRemove, onEdit };
   }, []);
 
   const getDiaryAnalysis = useMemo(() => {
@@ -87,14 +99,18 @@ function App() {
   const { goodCount, badCount, goodRatio } = getDiaryAnalysis;
 
   return (
-    <div className="App">
-      <DiaryEditor onCreate={onCreate} />
-      <div>전체 일기: {data.length}개</div>
-      <div>기분 좋은 일기 갯수 : {goodCount}개</div>
-      <div>기분 나쁜 일기 갯수 : {badCount}개</div>
-      <div>기분 좋은 일기 비율 : {goodRatio}%</div>
-      <DiaryList onEdit={onEdit} onRemove={onRemove} diaryList={data} />
-    </div>
+    <DiaryStateContext.Provider value={data}>
+      <DiaryDispatchContext.Provider value={memoizedDispatches}>
+        <div className="App">
+          <DiaryEditor onCreate={onCreate} />
+          <div>전체 일기: {data.length}개</div>
+          <div>기분 좋은 일기 갯수 : {goodCount}개</div>
+          <div>기분 나쁜 일기 갯수 : {badCount}개</div>
+          <div>기분 좋은 일기 비율 : {goodRatio}%</div>
+          <DiaryList onEdit={onEdit} onRemove={onRemove} />
+        </div>
+      </DiaryDispatchContext.Provider>
+    </DiaryStateContext.Provider>
   );
 }
 
