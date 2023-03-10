@@ -1,16 +1,48 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useReducer, useRef } from "react";
 import "./App.css";
 import DiaryEditor from "./pages/DiaryEditor";
 import DiaryList from "./pages/DiaryList";
 
+const reducer = (state, action) => {
+  switch (action.type) {
+    case "INIT": {
+      return action.data;
+    }
+    case "CREATE": {
+      const created_date = new Date().getTime();
+      const newItem = {
+        ...action.data,
+        created_date,
+      };
+      return [newItem, ...state];
+    }
+    case "REMOVE": {
+      return state.filter((item) => item.id !== action.targetId);
+    }
+    case "EDIT": {
+      return state.map((item) =>
+        item.id === action.targetId
+          ? { ...item, content: action.newContent }
+          : item
+      );
+    }
+    default: // 타입이 잘못 전달될 경우 상태 변화가 일어나지 않도록 default값을 비워 둠.
+      return state;
+  }
+};
+
 function App() {
-  const [data, setData] = useState([]);
+  // const [data, setData] = useState([]); // useReducer로 대체
+
+  const [data, dispatch] = useReducer(reducer, []);
+
   const dataId = useRef(0);
 
   const getData = async () => {
     const data = await fetch(
       "https://jsonplaceholder.typicode.com/comments"
     ).then((data) => data.json());
+
     const initData = data.slice(0, 20).map((it) => {
       return {
         author: it.email,
@@ -20,7 +52,8 @@ function App() {
         id: dataId.current++,
       };
     });
-    setData(initData);
+
+    dispatch({ type: "INIT", data: initData }); // 액션 객체의 타입명, 액션에 필요한 데이터 전달
   };
 
   useEffect(() => {
@@ -28,28 +61,20 @@ function App() {
   }, []);
 
   const onCreate = useCallback((author, content, emotion) => {
-    const created_date = new Date().getTime();
-    const newItem = {
-      author,
-      content,
-      emotion,
-      created_date,
-      id: dataId.current,
-    };
+    dispatch({
+      type: "CREATE",
+      data: { author, content, emotion, id: dataId.current },
+    });
+
     dataId.current += 1;
-    setData((data) => [newItem, ...data]); // 함수형 업데이트: 상태 변화 함수에 함수를 전달하여 상태를 업데이트 하는 방식
   }, []);
 
   const onRemove = useCallback((targetId) => {
-    setData((data) => data.filter((item) => item.id !== targetId));
+    dispatch({ type: "REMOVE", targetId }); // useCallback 내에서 dispatch 함수를 호출할 때 함수형 업데이트 작업 없이 deps를 빈 배열로 반환할 수 있다.
   }, []);
 
   const onEdit = useCallback((targetId, newContent) => {
-    setData((data) =>
-      data.map((item) =>
-        item.id === targetId ? { ...item, content: newContent } : item
-      )
-    );
+    dispatch({ type: "EDIT", targetId, newContent });
   }, []);
 
   const getDiaryAnalysis = useMemo(() => {
@@ -59,7 +84,7 @@ function App() {
     return { goodCount, badCount, goodRatio };
   }, [data.length]);
 
-  const { goodCount, badCount, goodRatio } = getDiaryAnalysis; // 함수 호출이 아닌 '값'으로 사용해야한다.
+  const { goodCount, badCount, goodRatio } = getDiaryAnalysis;
 
   return (
     <div className="App">

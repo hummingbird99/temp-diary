@@ -1,11 +1,7 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import styles from "./DiaryEditor.module.css";
 
 const DiaryEditor = ({ onCreate }) => {
-  useEffect(() => {
-    console.log("DiaryEditor 렌더"); // 렌더링이 두 번 일어남
-  });
-
   const authorInput = useRef();
   const contentInput = useRef();
 
@@ -83,4 +79,4 @@ const DiaryEditor = ({ onCreate }) => {
   );
 };
 
-export default React.memo(DiaryEditor); // 함수 코드가 길 경우 export 부분에 사용해도 무방함
+export default React.memo(DiaryEditor);
