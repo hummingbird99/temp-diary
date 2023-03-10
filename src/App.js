@@ -1,8 +1,7 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import "./App.css";
 import DiaryEditor from "./pages/DiaryEditor";
 import DiaryList from "./pages/DiaryList";
-import OptimizeTest from "./components/OptimizeTest";
 
 function App() {
   const [data, setData] = useState([]);
@@ -28,7 +27,7 @@ function App() {
     getData();
   }, []);
 
-  const onCreate = (author, content, emotion) => {
+  const onCreate = useCallback((author, content, emotion) => {
     const created_date = new Date().getTime();
     const newItem = {
       author,
@@ -38,21 +37,20 @@ function App() {
       id: dataId.current,
     };
     dataId.current += 1;
-    setData([newItem, ...data]);
-  };
+    setData((data) => [newItem, ...data]); // 함수형 업데이트: 상태 변화 함수에 함수를 전달하여 상태를 업데이트 하는 방식
+  }, []);
 
-  const onRemove = (targetId) => {
-    const newDiaryList = data.filter((item) => item.id !== targetId);
-    setData(newDiaryList);
-  };
+  const onRemove = useCallback((targetId) => {
+    setData((data) => data.filter((item) => item.id !== targetId));
+  }, []);
 
-  const onEdit = (targetId, newContent) => {
-    setData(
+  const onEdit = useCallback((targetId, newContent) => {
+    setData((data) =>
       data.map((item) =>
         item.id === targetId ? { ...item, content: newContent } : item
       )
     );
-  };
+  }, []);
 
   const getDiaryAnalysis = useMemo(() => {
     const goodCount = data.filter((item) => item.emotion >= 3).length;
@@ -61,11 +59,10 @@ function App() {
     return { goodCount, badCount, goodRatio };
   }, [data.length]);
 
-  const { goodCount, badCount, goodRatio } = getDiaryAnalysis; // 함수 호출이 아닌 값으로 사용해야한다.
+  const { goodCount, badCount, goodRatio } = getDiaryAnalysis; // 함수 호출이 아닌 '값'으로 사용해야한다.
 
   return (
     <div className="App">
-      <OptimizeTest />
       <DiaryEditor onCreate={onCreate} />
       <div>전체 일기: {data.length}개</div>
       <div>기분 좋은 일기 갯수 : {goodCount}개</div>
