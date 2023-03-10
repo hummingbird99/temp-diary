@@ -1,9 +1,8 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import "./App.css";
 import DiaryEditor from "./pages/DiaryEditor";
 import DiaryList from "./pages/DiaryList";
-
-// https://jsonplaceholder.typicode.com/comments
+import OptimizeTest from "./components/OptimizeTest";
 
 function App() {
   const [data, setData] = useState([]);
@@ -55,9 +54,23 @@ function App() {
     );
   };
 
+  const getDiaryAnalysis = useMemo(() => {
+    const goodCount = data.filter((item) => item.emotion >= 3).length;
+    const badCount = data.length - goodCount;
+    const goodRatio = Math.floor((goodCount / data.length) * 100);
+    return { goodCount, badCount, goodRatio };
+  }, [data.length]);
+
+  const { goodCount, badCount, goodRatio } = getDiaryAnalysis; // 함수 호출이 아닌 값으로 사용해야한다.
+
   return (
     <div className="App">
+      <OptimizeTest />
       <DiaryEditor onCreate={onCreate} />
+      <div>전체 일기: {data.length}개</div>
+      <div>기분 좋은 일기 갯수 : {goodCount}개</div>
+      <div>기분 나쁜 일기 갯수 : {badCount}개</div>
+      <div>기분 좋은 일기 비율 : {goodRatio}%</div>
       <DiaryList onEdit={onEdit} onRemove={onRemove} diaryList={data} />
     </div>
   );
